@@ -82,24 +82,33 @@ def enumerate_strings(dfa, max_length):
     return valid_strings
 
 
+
 def visualize_dfa(dfa):
-    graph = pydot.Dot(graph_type="digraph", rankdir="LR")  # Left-to-right layout
+    graph = pydot.Dot(graph_type="digraph", rankdir="LR")
 
-    # Add states as nodes
+    # Add nodes
     for state in dfa.states:
+        state_str = str(state)  # Ensure the state is converted to string
         if state == dfa.start_state:
-            graph.add_node(pydot.Node(state, shape="circle", style="filled", fillcolor="lightgreen", fontcolor="black"))
+            graph.add_node(pydot.Node(state_str, shape="circle", style="filled", fillcolor="lightgreen"))
         elif state in dfa.final_states:
-            graph.add_node(pydot.Node(state, shape="doublecircle", style="filled", fillcolor="lightblue", fontcolor="black"))
+            graph.add_node(pydot.Node(state_str, shape="doublecircle", style="filled", fillcolor="lightblue"))
         else:
-            graph.add_node(pydot.Node(state, shape="circle", style="filled", fillcolor="gray", fontcolor="black"))
+            graph.add_node(pydot.Node(state_str, shape="circle", style="filled", fillcolor="gray"))
 
-    # Add edges (transitions)
+    # Add edges
     for state, transitions in dfa.to_dict().items():
+        state_str = str(state)  # Convert state to string for edges
         for symbol, next_state in transitions.items():
-            graph.add_edge(pydot.Edge(state, next_state, label=str(symbol), color="black"))
+            next_state_str = str(next_state)  # Convert next state to string for edges
+            graph.add_edge(pydot.Edge(state_str, next_state_str, label=str(symbol)))
 
-    return graph
+    # Write the graph to a PNG image
+    img_path = "dfa_graph.png"
+    graph.write_png(img_path)  # Use write_png to save the image
+
+    return graph  # Return the graph object instead of a string
+
 
 class DFAApp:
     def __init__(self, root):
@@ -175,7 +184,7 @@ class DFAApp:
             self.dfa = user_regex_to_dfa(regex_string)
             if self.dfa:
                 self.output_label.config(text="DFA generated successfully!")
-                self.visualize_dfa()
+                self.visualize_dfa(self.dfa)  # Pass the dfa object here
             else:
                 messagebox.showerror("Error", "Failed to generate DFA.")
         else:
@@ -204,16 +213,31 @@ class DFAApp:
         else:
             messagebox.showerror("Error", "Please generate a DFA first.")
 
-    def visualize_dfa(self):
-        if self.dfa:
-            graph = visualize_dfa(self.dfa)
-            img_path = "dfa_graph.png"
-            graph.layout(prog="dot")
-            graph.draw(img_path)
-            image = tk.PhotoImage(file=img_path)
-            img_label = tk.Label(self.root, image=image)
-            img_label.image = image  # Keep a reference to the image
-            img_label.pack()
+    def visualize_dfa(self, dfa):  # Update method to accept dfa parameter
+        graph = pydot.Dot(graph_type="digraph", rankdir="LR")
+
+        # Add nodes
+        for state in dfa.states:
+            state_str = str(state)  # Ensure the state is converted to string
+            if state == dfa.start_state:
+                graph.add_node(pydot.Node(state_str, shape="circle", style="filled", fillcolor="lightgreen"))
+            elif state in dfa.final_states:
+                graph.add_node(pydot.Node(state_str, shape="doublecircle", style="filled", fillcolor="lightblue"))
+            else:
+                graph.add_node(pydot.Node(state_str, shape="circle", style="filled", fillcolor="gray"))
+
+        # Add edges
+        for state, transitions in dfa.to_dict().items():
+            state_str = str(state)  # Convert state to string for edges
+            for symbol, next_state in transitions.items():
+                next_state_str = str(next_state)  # Convert next state to string for edges
+                graph.add_edge(pydot.Edge(state_str, next_state_str, label=str(symbol)))
+
+        # Write the graph to a PNG image
+        img_path = "dfa_graph.png"
+        graph.write_png(img_path)  # Use write_png to save the image
+
+        return graph  # Return the graph object instead of a string
 
 def main():
     root = tk.Tk()
